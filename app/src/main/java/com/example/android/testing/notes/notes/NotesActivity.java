@@ -16,10 +16,6 @@
 
 package com.example.android.testing.notes.notes;
 
-import com.example.android.testing.notes.R;
-import com.example.android.testing.notes.statistics.StatisticsActivity;
-import com.example.android.testing.notes.util.EspressoIdlingResource;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
@@ -35,6 +31,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.example.android.testing.notes.R;
+import com.example.android.testing.notes.statistics.StatisticsActivity;
+import com.example.android.testing.notes.util.EspressoIdlingResource;
+
 public class NotesActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
@@ -46,16 +46,18 @@ public class NotesActivity extends AppCompatActivity {
 
 
         // Set up the toolbar.
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setHomeAsUpIndicator(R.drawable.ic_menu);
-        ab.setDisplayHomeAsUpEnabled(true);
+        if (ab != null) {
+            ab.setHomeAsUpIndicator(R.drawable.ic_menu);
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         // Set up the navigation drawer.
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             setupDrawerContent(navigationView);
         }
@@ -80,6 +82,8 @@ public class NotesActivity extends AppCompatActivity {
                 // Open the navigation drawer when the home icon is selected from the toolbar.
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

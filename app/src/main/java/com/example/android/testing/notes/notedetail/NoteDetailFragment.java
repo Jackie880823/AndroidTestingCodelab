@@ -16,15 +16,7 @@
 
 package com.example.android.testing.notes.notedetail;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
-import com.example.android.testing.notes.Injection;
-import com.example.android.testing.notes.R;
-import com.example.android.testing.notes.util.EspressoIdlingResource;
-
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,6 +25,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.example.android.testing.notes.Injection;
+import com.example.android.testing.notes.R;
+import com.example.android.testing.notes.util.EspressoIdlingResource;
+
+import java.util.Objects;
 
 /**
  * Main UI for the note detail screen.
@@ -57,13 +60,6 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         return fragment;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mActionsListener = new NoteDetailPresenter(Injection.provideNotesRepository(),
-                this);
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,6 +72,13 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mActionsListener = new NoteDetailPresenter(Injection.provideNotesRepository(),
+                this);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         String noteId = getArguments().getString(ARGUMENT_NOTE_ID);
@@ -84,32 +87,27 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     @Override
     public void setProgressIndicator(boolean active) {
-//        if (active) {
-//            mDetailTitle.setText("");
-//            mDetailDescription.setText(getString(R.string.loading));
-//        }
+        //        if (active) {
+        //            mDetailTitle.setText("");
+        //            mDetailDescription.setText(getString(R.string.loading));
+        //        }
     }
 
     @Override
-    public void hideDescription() {
-//        mDetailDescription.setVisibility(View.GONE);
+    public void showMissingNote() {
+        mDetailTitle.setText("");
+        mDetailDescription.setText(getString(R.string.no_data));
     }
 
     @Override
     public void hideTitle() {
-//        mDetailTitle.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void showDescription(String description) {
-//        mDetailDescription.setVisibility(View.VISIBLE);
-//        mDetailDescription.setText(description);
+        //        mDetailTitle.setVisibility(View.GONE);
     }
 
     @Override
     public void showTitle(String title) {
-//        mDetailTitle.setVisibility(View.VISIBLE);
-//        mDetailTitle.setText(title);
+        //        mDetailTitle.setVisibility(View.VISIBLE);
+        //        mDetailTitle.setText(title);
     }
 
     @Override
@@ -121,15 +119,16 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         mDetailImage.setVisibility(View.VISIBLE);
 
         // This app uses Glide for image loading
-        Glide.with(this)
+        RequestOptions options = new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL).centerCrop();
+
+        Glide
+                .with(Objects.requireNonNull(getContext()))
+                .applyDefaultRequestOptions(options)
                 .load(imageUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(new GlideDrawableImageViewTarget(mDetailImage) {
+                .into(new DrawableImageViewTarget(mDetailImage) {
                     @Override
-                    public void onResourceReady(GlideDrawable resource,
-                                                GlideAnimation<? super GlideDrawable> animation) {
-                        super.onResourceReady(resource, animation);
+                    public void onResourceReady(Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        super.onResourceReady(resource, transition);
                         EspressoIdlingResource.decrement(); // App is idle.
                     }
                 });
@@ -142,8 +141,13 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     }
 
     @Override
-    public void showMissingNote() {
-        mDetailTitle.setText("");
-        mDetailDescription.setText(getString(R.string.no_data));
+    public void hideDescription() {
+        //        mDetailDescription.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showDescription(String description) {
+        //        mDetailDescription.setVisibility(View.VISIBLE);
+        //        mDetailDescription.setText(description);
     }
 }

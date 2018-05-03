@@ -16,17 +16,9 @@
 
 package com.example.android.testing.notes.addnote;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
-import com.example.android.testing.notes.Injection;
-import com.example.android.testing.notes.R;
-import com.example.android.testing.notes.util.EspressoIdlingResource;
-
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -45,7 +37,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.example.android.testing.notes.Injection;
+import com.example.android.testing.notes.R;
+import com.example.android.testing.notes.util.EspressoIdlingResource;
+
 import java.io.IOException;
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -65,67 +67,12 @@ public class AddNoteFragment extends Fragment implements AddNoteContract.View {
 
     private ImageView mImageThumbnail;
 
-    public static AddNoteFragment newInstance() {
-        return new AddNoteFragment();
-    }
-
     public AddNoteFragment() {
         // Required empty public constructor
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mActionListener = new AddNotePresenter(Injection.provideNotesRepository(), this,
-                Injection.provideImageFile());
-
-        FloatingActionButton fab =
-                (FloatingActionButton) getActivity().findViewById(R.id.fab_add_notes);
-        fab.setImageResource(R.drawable.ic_done);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mActionListener.saveNote(mTitle.getText().toString(),
-                        mDescription.getText().toString());
-            }
-        });
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_addnote, container, false);
-        mTitle = (TextView) root.findViewById(R.id.add_note_title);
-        mDescription = (TextView) root.findViewById(R.id.add_note_description);
-        mImageThumbnail = (ImageView) root.findViewById(R.id.add_note_image_thumbnail);
-
-        setHasOptionsMenu(true);
-        setRetainInstance(true);
-        return root;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.take_picture:
-                try {
-                    mActionListener.takePicture();
-                } catch (IOException ioe) {
-                    if (getView() != null) {
-                        Snackbar.make(getView(), getString(R.string.take_picture_error),
-                                Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.fragment_addnote_options_menu_actions, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+    public static AddNoteFragment newInstance() {
+        return new AddNoteFragment();
     }
 
     @Override
@@ -163,16 +110,17 @@ public class AddNoteFragment extends Fragment implements AddNoteContract.View {
         EspressoIdlingResource.increment(); // App is busy until further notice.
 
         // This app uses Glide for image loading
-        Glide.with(this)
+        RequestOptions options = new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL).centerCrop();
+        Glide
+                .with(Objects.requireNonNull(getActivity()))
+                .applyDefaultRequestOptions(options)
                 .load(imageUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(new GlideDrawableImageViewTarget(mImageThumbnail) {
+                .into(new DrawableImageViewTarget(mImageThumbnail) {
                     @Override
-                    public void onResourceReady(GlideDrawable resource,
-                                                GlideAnimation<? super GlideDrawable> animation) {
-                        super.onResourceReady(resource, animation);
-                        EspressoIdlingResource.decrement(); // Set app as idle.
+                    public void onResourceReady(Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        super.onResourceReady(resource, transition);
+                        // Set app as idle.
+                        EspressoIdlingResource.decrement();
                     }
                 });
     }
@@ -191,5 +139,62 @@ public class AddNoteFragment extends Fragment implements AddNoteContract.View {
         } else {
             mActionListener.imageCaptureFailed();
         }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_addnote, container, false);
+        mTitle = (TextView) root.findViewById(R.id.add_note_title);
+        mDescription = (TextView) root.findViewById(R.id.add_note_description);
+        mImageThumbnail = (ImageView) root.findViewById(R.id.add_note_image_thumbnail);
+
+        setHasOptionsMenu(true);
+        setRetainInstance(true);
+        return root;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mActionListener = new AddNotePresenter(Injection.provideNotesRepository(), this,
+                Injection.provideImageFile());
+
+        FloatingActionButton fab =
+                (FloatingActionButton) getActivity().findViewById(R.id.fab_add_notes);
+        fab.setImageResource(R.drawable.ic_done);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActionListener.saveNote(mTitle.getText().toString(),
+                        mDescription.getText().toString());
+            }
+        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.fragment_addnote_options_menu_actions, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.take_picture:
+                try {
+                    mActionListener.takePicture();
+                } catch (IOException ioe) {
+                    if (getView() != null) {
+                        Snackbar.make(getView(), getString(R.string.take_picture_error),
+                                Snackbar.LENGTH_LONG).show();
+                    }
+                }
+                return true;
+            default:
+                break;
+        }
+        return false;
     }
 }
