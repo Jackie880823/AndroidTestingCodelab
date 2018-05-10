@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Listens to user actions from the UI ({@link NoteDetailFragment}), retrieves the data and updates
  * the UI as required.
+ * @author Jackie
  */
 public class NoteDetailPresenter implements NoteDetailContract.UserActionsListener {
 
@@ -48,15 +49,12 @@ public class NoteDetailPresenter implements NoteDetailContract.UserActionsListen
         }
 
         mNotesDetailView.setProgressIndicator(true);
-        mNotesRepository.getNote(noteId, new NotesRepository.GetNoteCallback() {
-            @Override
-            public void onNoteLoaded(Note note) {
-                mNotesDetailView.setProgressIndicator(false);
-                if (null == note) {
-                    mNotesDetailView.showMissingNote();
-                } else {
-                    showNote(note);
-                }
+        mNotesRepository.getNote(noteId, note -> {
+            mNotesDetailView.setProgressIndicator(false);
+            if (null == note) {
+                mNotesDetailView.showMissingNote();
+            } else {
+                showNote(note);
             }
         });
     }

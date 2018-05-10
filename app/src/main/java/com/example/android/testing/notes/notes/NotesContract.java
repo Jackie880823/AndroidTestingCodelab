@@ -24,26 +24,64 @@ import java.util.List;
 
 /**
  * This specifies the contract between the view and the presenter.
+ * @author Jackie
  */
 public interface NotesContract {
 
+    /**
+     * The interface View.
+     */
     interface View {
 
+        /**
+         * Sets progress indicator.
+         *
+         * @param active the active
+         */
         void setProgressIndicator(boolean active);
 
+        /**
+         * Show notes.
+         *
+         * @param notes the notes
+         */
         void showNotes(List<Note> notes);
 
+        /**
+         * Show add note.
+         */
         void showAddNote();
 
+        /**
+         * Show note detail ui.
+         *
+         * @param noteId the note id
+         */
         void showNoteDetailUi(String noteId);
     }
 
+    /**
+     * The interface User actions listener.
+     */
     interface UserActionsListener {
 
+        /**
+         * Load notes.
+         *
+         * @param forceUpdate the force update
+         */
         void loadNotes(boolean forceUpdate);
 
+        /**
+         * Add new note.
+         */
         void addNewNote();
 
+        /**
+         * Open note details.
+         *
+         * @param requestedNote the requested note
+         */
         void openNoteDetails(@NonNull Note requestedNote);
     }
 }

@@ -16,13 +16,11 @@
 
 package com.example.android.testing.notes.notes;
 
+import android.support.annotation.NonNull;
+
 import com.example.android.testing.notes.data.Note;
 import com.example.android.testing.notes.data.NotesRepository;
 import com.example.android.testing.notes.util.EspressoIdlingResource;
-
-import android.support.annotation.NonNull;
-
-import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -30,12 +28,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Listens to user actions from the UI ({@link NotesFragment}), retrieves the data and updates the
  * UI as required.
+ *
+ * @author Jackie
  */
 public class NotesPresenter implements NotesContract.UserActionsListener {
 
     private final NotesRepository mNotesRepository;
     private final NotesContract.View mNotesView;
 
+    /**
+     * Instantiates a new Notes presenter.
+     *
+     * @param notesRepository the notes repository
+     * @param notesView       the notes view
+     */
     public NotesPresenter(
             @NonNull NotesRepository notesRepository, @NonNull NotesContract.View notesView) {
         mNotesRepository = checkNotNull(notesRepository, "notesRepository cannot be null");
@@ -44,28 +50,25 @@ public class NotesPresenter implements NotesContract.UserActionsListener {
 
     @Override
     public void loadNotes(boolean forceUpdate) {
-//        mNotesView.setProgressIndicator(true);
-//        if (forceUpdate) {
-//            mNotesRepository.refreshData();
-//        }
-//
-//        // The network request might be handled in a different thread so make sure Espresso knows
-//        // that the app is busy until the response is handled.
-//        EspressoIdlingResource.increment(); // App is busy until further notice
-//
-//        mNotesRepository.getNotes(new NotesRepository.LoadNotesCallback() {
-//            @Override
-//            public void onNotesLoaded(List<Note> notes) {
-//                EspressoIdlingResource.decrement(); // Set app as idle.
-//                mNotesView.setProgressIndicator(false);
-//                mNotesView.showNotes(notes);
-//            }
-//        });
+        mNotesView.setProgressIndicator(true);
+        if (forceUpdate) {
+            mNotesRepository.refreshData();
+        }
+
+        // The network request might be handled in a different thread so make sure Espresso knows
+        // that the app is busy until the response is handled.
+        EspressoIdlingResource.increment(); // App is busy until further notice
+
+        mNotesRepository.getNotes(notes -> {
+            EspressoIdlingResource.decrement(); // Set app as idle.
+            mNotesView.setProgressIndicator(false);
+            mNotesView.showNotes(notes);
+        });
     }
 
     @Override
     public void addNewNote() {
-//        mNotesView.showAddNote();
+        mNotesView.showAddNote();
     }
 
     @Override
